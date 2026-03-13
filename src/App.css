@@ -60,7 +60,7 @@ body {
   right: 0;
   height: var(--header-height);
   background: var(--primary);
-  z-index: 100;
+  z-index: 150;
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
