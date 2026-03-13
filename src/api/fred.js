@@ -113,3 +113,20 @@ export function hasApiKey() {
 export function clearApiKey() {
   localStorage.removeItem('fred_api_key');
 }
+
+// Anthropic API key management
+export function getAnthropicKey() {
+  return localStorage.getItem('anthropic_api_key') || '';
+}
+
+export function setAnthropicKey(key) {
+  localStorage.setItem('anthropic_api_key', key.trim());
+}
+
+export function hasAnthropicKey() {
+  return !!localStorage.getItem('anthropic_api_key');
+}
+
+export function clearAnthropicKey() {
+  localStorage.removeItem('anthropic_api_key');
+}

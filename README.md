@@ -14,6 +14,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 - **Time Range Selection** -- Toggle between 1-year, 5-year, 10-year, and full history views
 - **Latest Value Display** -- Prominent display of the most recent observation
 - **Metadata Panel** -- Units, frequency, seasonal adjustment, date range, and source notes
+- **AI Chart Analysis** -- Click "Explain this chart" to get an AI-generated narrative explaining trends, patterns, and economic significance (powered by Claude)
 
 ### Search
 - **Full-Text Search** -- Search across all FRED series by keyword (GDP, unemployment, inflation, etc.)
@@ -25,6 +26,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 
 ### Settings
 - **API Key Management** -- Enter, validate, and change your FRED API key
+- **Anthropic API Key** -- Optional key for AI-powered chart analysis (get one at [console.anthropic.com](https://console.anthropic.com/))
 - **Clear History** -- Remove all recently viewed entries
 
 ## Tech Stack
@@ -35,6 +37,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 | Build Tool | Vite |
 | Routing | React Router v6 |
 | Charts | Recharts |
+| AI Analysis | Claude API via Vercel serverless function |
 | API | FRED REST API (api.stlouisfed.org) |
 | Storage | localStorage (API key, history) |
 | Styling | Plain CSS with CSS custom properties |
@@ -45,6 +48,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 
 1. **Node.js** (v18 or later)
 2. **FRED API Key** -- Register for a free key at [fred.stlouisfed.org/docs/api/api_key.html](https://fred.stlouisfed.org/docs/api/api_key.html)
+3. **Anthropic API Key** (optional) -- For AI chart analysis, get a key at [console.anthropic.com](https://console.anthropic.com/)
 
 ### Installation
 
@@ -55,7 +59,16 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser and enter your FRED API key when prompted.
+Open `http://localhost:5173` in your browser and enter your FRED API key when prompted. To enable AI chart analysis, add your Anthropic API key in the Settings page.
+
+### Deploying to Vercel
+
+This project is configured for Vercel deployment with a `vercel.json` that handles:
+- FRED API proxying via rewrites (`/api/fred/*` to `api.stlouisfed.org`)
+- AI analysis via a serverless function (`/api/analyze`)
+- SPA routing (all routes fall back to `index.html`)
+
+Select **Vite** as the framework preset when importing the project.
 
 ## Project Structure
 
@@ -64,6 +77,7 @@ src/
   api/
     fred.js              # FRED API client -- all endpoint wrappers
   components/
+    AiNarrator.jsx       # AI-powered chart analysis with Claude
     ApiKeyPrompt.jsx     # First-run API key entry with validation
     BottomNav.jsx        # Mobile bottom tab bar / desktop sidebar
     Chart.jsx            # Recharts line chart with tooltips
@@ -93,7 +107,7 @@ The layout adapts across three breakpoints:
 
 ## API Proxy
 
-During development, the Vite dev server proxies `/api/fred/*` requests to `https://api.stlouisfed.org/fred/*` to avoid CORS restrictions. This is configured in `vite.config.js`. For production deployment, you'll need to set up an equivalent proxy or backend.
+During development, the Vite dev server proxies `/api/fred/*` requests to `https://api.stlouisfed.org/fred/*` to avoid CORS restrictions. A custom Vite middleware also handles `/api/analyze` requests locally by proxying to the Anthropic API. In production on Vercel, both are handled by rewrites and a serverless function respectively.
 
 ## FRED API Endpoints Used
 

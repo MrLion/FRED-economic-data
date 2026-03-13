@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getSeries, getSeriesObservations } from '../api/fred';
 import Chart from '../components/Chart';
+import AiNarrator from '../components/AiNarrator';
 import Loading, { ErrorMessage } from '../components/Loading';
 
 const RANGES = [
@@ -87,6 +88,8 @@ export default function SeriesDetail({ onView }) {
       </div>
 
       <Chart observations={filteredObs} title={series.title} />
+
+      <AiNarrator series={series} observations={filteredObs} />
 
       <div className="series-meta">
         <div className="meta-row">
