@@ -18,6 +18,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 
 ### Search
 - **Full-Text Search** -- Search across all FRED series by keyword (GDP, unemployment, inflation, etc.)
+- **Natural Language Search** -- Ask questions like "How has inflation changed since COVID?" and AI extracts the optimal FRED search terms (powered by Claude)
 - **Paginated Results** -- Load more results incrementally with series count display
 
 ### History
