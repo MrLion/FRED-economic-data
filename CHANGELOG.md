@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.0 - Search UX Improvements (2026-03-13)
+
+### Added
+- **Search Clear Button** -- An × button appears in the search bar when text is entered, allowing users to quickly reset the search input with one tap
+- Clears text, closes the suggestion dropdown, and returns focus to the input
+
+### Fixed
+- **Search dropdown z-index** -- The live search dropdown no longer falls behind the desktop sidebar navigation
+
 ## v1.2.0 - Natural Language Search (2026-03-13)
 
 ### Added

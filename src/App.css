@@ -135,6 +135,29 @@ body {
   background: rgba(255,255,255,0.25);
 }
 
+.search-clear {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.3);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.search-clear:hover {
+  background: rgba(255,255,255,0.5);
+}
+
 .search-spinner {
   position: absolute;
   right: 10px;
