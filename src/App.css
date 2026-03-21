@@ -353,6 +353,63 @@ body {
   margin-bottom: 8px;
 }
 
+.captcha-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+.captcha-challenge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.captcha-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.captcha-question {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+.captcha-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.captcha-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  outline: none;
+  text-align: center;
+  font-weight: 600;
+}
+.captcha-input:focus {
+  border-color: var(--primary);
+}
+.captcha-refresh {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+.captcha-refresh:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .api-key-divider {
   display: flex;
   align-items: center;
