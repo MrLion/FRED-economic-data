@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // Dev-only middleware to handle /api/analyze (mirrors the Vercel serverless function)
@@ -15,7 +15,8 @@ function analyzeApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { apiKey, seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = JSON.parse(body);
+        const { apiKey: clientKey, seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = JSON.parse(body);
+        const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
 
         if (!apiKey || !dataSummary) {
           res.statusCode = 400;
@@ -89,7 +90,8 @@ function nlSearchApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { apiKey, query } = JSON.parse(body);
+        const { apiKey: clientKey, query } = JSON.parse(body);
+        const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
 
         if (!apiKey || !query) {
           res.statusCode = 400;
@@ -158,7 +160,12 @@ You MUST respond with valid JSON only, no other text. Format:
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Load .env so ANTHROPIC_API_KEY is available in process.env for middleware
+  const env = loadEnv(mode, process.cwd(), '');
+  Object.assign(process.env, env);
+
+  return {
   plugins: [react(), analyzeApiPlugin(), nlSearchApiPlugin()],
   server: {
     proxy: {
@@ -169,4 +176,5 @@ export default defineConfig({
       },
     },
   },
+  };
 })

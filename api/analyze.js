@@ -3,7 +3,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { apiKey, seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = req.body || {};
+  const { apiKey: clientKey, seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = req.body || {};
+  const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
     return res.status(400).json({ error: 'Anthropic API key is required' });
