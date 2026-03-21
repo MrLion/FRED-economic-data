@@ -1,9 +1,30 @@
 import { useState } from 'react';
-import { setApiKey } from '../api/fred';
+import { setApiKey, setDemoKey } from '../api/fred';
 
 export default function ApiKeyPrompt({ onSaved }) {
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const validateAndSave = async (apiKey) => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(
+        `/api/fred/category?category_id=0&api_key=${encodeURIComponent(apiKey)}&file_type=json`
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error_message || 'Invalid API key');
+      }
+      setApiKey(apiKey);
+      onSaved();
+    } catch (err) {
+      setError(err.message || 'Failed to validate API key. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,19 +33,12 @@ export default function ApiKeyPrompt({ onSaved }) {
       setError('Please enter your API key');
       return;
     }
-    try {
-      const res = await fetch(
-        `/api/fred/category?category_id=0&api_key=${encodeURIComponent(trimmed)}&file_type=json`
-      );
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error_message || 'Invalid API key');
-      }
-      setApiKey(trimmed);
-      onSaved();
-    } catch (err) {
-      setError(err.message || 'Failed to validate API key. Please try again.');
-    }
+    await validateAndSave(trimmed);
+  };
+
+  const handleDemo = () => {
+    setDemoKey();
+    onSaved();
   };
 
   return (
@@ -50,10 +64,22 @@ export default function ApiKeyPrompt({ onSaved }) {
             placeholder="Enter your FRED API key"
             className="api-key-input"
             autoFocus
+            disabled={loading}
           />
           {error && <p className="api-key-error">{error}</p>}
-          <button type="submit" className="btn-primary">Connect to FRED</button>
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? 'Validating...' : 'Connect to FRED'}
+          </button>
         </form>
+        <div className="api-key-divider">
+          <span>or</span>
+        </div>
+        <button className="btn-demo" onClick={handleDemo}>
+          Try Demo Mode
+        </button>
+        <p className="api-key-demo-hint">
+          Explore the app instantly with a shared demo key
+        </p>
       </div>
     </div>
   );

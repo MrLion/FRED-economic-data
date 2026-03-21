@@ -353,6 +353,49 @@ body {
   margin-bottom: 8px;
 }
 
+.api-key-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0 16px;
+  gap: 12px;
+}
+.api-key-divider::before,
+.api-key-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.api-key-divider span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-demo {
+  width: 100%;
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-demo:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.api-key-demo-hint {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
 /* ===== Buttons ===== */
 .btn-primary {
   width: 100%;

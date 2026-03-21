@@ -1,7 +1,16 @@
 const BASE_PATH = '/api/fred';
+const DEMO_API_KEY = '311f23a1c836a93650d447f856d2d8b3';
 
 function getApiKey() {
   return localStorage.getItem('fred_api_key') || '';
+}
+
+export function isDemoKey() {
+  return getApiKey() === DEMO_API_KEY;
+}
+
+export function setDemoKey() {
+  localStorage.setItem('fred_api_key', DEMO_API_KEY);
 }
 
 async function fredFetch(endpoint, params = {}) {
