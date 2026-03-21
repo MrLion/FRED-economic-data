@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { searchSeries } from '../api/fred';
-import { getAnthropicKey, hasAnthropicKey } from '../api/fred';
+import { getAnthropicKey } from '../api/fred';
 import SeriesCard from '../components/SeriesCard';
 import Loading, { ErrorMessage } from '../components/Loading';
 
@@ -47,7 +47,7 @@ export default function Search() {
       setAiExplanation(null);
       setAiTerms(null);
 
-      const useNL = isNaturalLanguage(query) && hasAnthropicKey();
+      const useNL = isNaturalLanguage(query);
 
       if (useNL) {
         // AI-powered natural language search

@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAnthropicKey, hasAnthropicKey } from '../api/fred';
+import { getAnthropicKey } from '../api/fred';
 
 function computeDataSummary(observations) {
   if (!observations || observations.length === 0) return null;
@@ -59,18 +58,12 @@ function computeDataSummary(observations) {
 }
 
 export default function AiNarrator({ series, observations }) {
-  const navigate = useNavigate();
   const [narrative, setNarrative] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
 
   const handleAnalyze = useCallback(async () => {
-    if (!hasAnthropicKey()) {
-      setError('no-key');
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setNarrative(null);
@@ -121,23 +114,6 @@ export default function AiNarrator({ series, observations }) {
     setError(null);
     setCollapsed(false);
   };
-
-  // No key error state
-  if (error === 'no-key') {
-    return (
-      <div className="ai-narrator-card ai-narrator-nokey">
-        <div className="ai-narrator-card-header">
-          <span className="ai-narrator-icon">&#10024;</span>
-          <span className="ai-narrator-card-title">AI Analysis</span>
-          <button className="ai-narrator-dismiss" onClick={handleDismiss} aria-label="Dismiss">&#10005;</button>
-        </div>
-        <p className="ai-narrator-text">
-          To use AI-powered chart analysis, add your Anthropic API key in{' '}
-          <span className="ai-narrator-link" onClick={() => navigate('/settings')}>Settings</span>.
-        </p>
-      </div>
-    );
-  }
 
   // No analysis yet — show button
   if (!narrative && !loading && !error) {
