@@ -1,3 +1,5 @@
+import { AI_MODEL, NL_SEARCH_SYSTEM_PROMPT } from './shared/ai-config.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,17 +15,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Query is required' });
   }
 
-  const systemPrompt = `You are a FRED (Federal Reserve Economic Data) search assistant. Given a natural language question about economic data, extract 1-3 optimal search terms that would find the most relevant FRED data series.
-
-Rules:
-- Return FRED series IDs when you know them (e.g., "CPIAUCSL" for CPI, "UNRATE" for unemployment rate, "GDP" for GDP)
-- Also include descriptive search terms as fallbacks (e.g., "consumer price index", "unemployment rate")
-- Maximum 3 search terms, ordered by relevance
-- Keep the explanation brief (one sentence)
-
-You MUST respond with valid JSON only, no other text. Format:
-{"searchTerms": ["TERM1", "TERM2"], "explanation": "Brief explanation of what you're searching for"}`;
-
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -33,9 +24,9 @@ You MUST respond with valid JSON only, no other text. Format:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: AI_MODEL,
         max_tokens: 256,
-        system: systemPrompt,
+        system: NL_SEARCH_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: query }],
       }),
     });

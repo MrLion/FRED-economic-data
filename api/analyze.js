@@ -1,3 +1,5 @@
+import { AI_MODEL, ANALYZE_SYSTEM_PROMPT } from './shared/ai-config.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -12,17 +14,6 @@ export default async function handler(req, res) {
   if (!dataSummary) {
     return res.status(400).json({ error: 'Data summary is required' });
   }
-
-  const systemPrompt = `You are an expert economic data analyst. You explain economic data series from the Federal Reserve Economic Data (FRED) database in clear, accessible language.
-
-Given a statistical summary of a data series, provide a concise narrative (3-5 paragraphs) that covers:
-1. What this indicator measures and why it matters
-2. The overall trend over the available time period
-3. Notable patterns, peaks, troughs, or inflection points
-4. Recent behavior and what it suggests about current economic conditions
-5. Brief context about how this indicator relates to the broader economy
-
-Keep the tone professional but accessible — imagine explaining to someone with basic economic knowledge. Use specific numbers from the summary. Do not use markdown formatting — write in plain paragraphs.`;
 
   const userMessage = `Analyze this FRED economic data series:
 
@@ -43,9 +34,9 @@ ${dataSummary}`;
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: AI_MODEL,
         max_tokens: 1024,
-        system: systemPrompt,
+        system: ANALYZE_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMessage }],
       }),
     });

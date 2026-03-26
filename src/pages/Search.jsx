@@ -7,17 +7,19 @@ import Loading, { ErrorMessage } from '../components/Loading';
 
 function isNaturalLanguage(query) {
   const q = query.toLowerCase().trim();
-  const nlPatterns = /^(how|what|why|when|show|compare|tell|explain|find|which|where|is\s+there|are\s+there|has|have|did|does|do|can)\b/;
+  // Handle contractions by using ['\s] instead of \b at word boundaries
+  const nlPatterns = /^(how|what|why|when|show|compare|tell|explain|find|which|where|is\s+there|are\s+there|has|have|did|does|do|can|what's|how's|where's|who's|why's|when's)['\s]/;
   const hasQuestionMark = q.includes('?');
   const wordCount = q.split(/\s+/).length;
-  return nlPatterns.test(q) || hasQuestionMark || wordCount >= 5;
+  return nlPatterns.test(q) || hasQuestionMark || wordCount >= 6;
 }
 
-async function nlSearch(query) {
+async function nlSearch(query, signal) {
   const res = await fetch('/api/nl-search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ apiKey: getAnthropicKey(), query }),
+    signal,
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'NL search failed');
@@ -38,7 +40,8 @@ export default function Search() {
 
   useEffect(() => {
     if (!query) return;
-    let cancelled = false;
+    const controller = new AbortController();
+    const { signal } = controller;
 
     async function search() {
       setLoading(true);
@@ -53,8 +56,7 @@ export default function Search() {
         // AI-powered natural language search
         setAiLoading(true);
         try {
-          const nlResult = await nlSearch(query);
-          if (cancelled) return;
+          const nlResult = await nlSearch(query, signal);
 
           setAiExplanation(nlResult.explanation);
           setAiTerms(nlResult.searchTerms);
@@ -64,15 +66,13 @@ export default function Search() {
           const terms = nlResult.searchTerms || [];
           if (terms.length === 0) {
             // Fallback to original query
-            const data = await searchSeries(query, { limit: 50, offset: 0 });
-            if (cancelled) return;
+            const data = await searchSeries(query, { limit: 50, offset: 0 }, signal);
             setResults(data.series);
             setTotal(data.count);
           } else {
             const allResults = await Promise.all(
-              terms.map(term => searchSeries(term, { limit: 20, offset: 0 }).catch(() => ({ series: [], count: 0 })))
+              terms.map(term => searchSeries(term, { limit: 20, offset: 0 }, signal).catch(() => ({ series: [], count: 0 })))
             );
-            if (cancelled) return;
 
             // Merge and deduplicate by series ID
             const seen = new Set();
@@ -89,35 +89,35 @@ export default function Search() {
             setTotal(merged.length);
           }
         } catch (err) {
-          if (cancelled) return;
+          if (err.name === 'AbortError') return;
           setAiLoading(false);
           // Fallback to standard search on AI failure
           try {
-            const data = await searchSeries(query, { limit: 50, offset: 0 });
-            if (cancelled) return;
+            const data = await searchSeries(query, { limit: 50, offset: 0 }, signal);
             setResults(data.series);
             setTotal(data.count);
           } catch (fallbackErr) {
-            if (!cancelled) setError(fallbackErr.message);
+            if (fallbackErr.name === 'AbortError') return;
+            setError(fallbackErr.message);
           }
         }
       } else {
         // Standard FRED keyword search
         try {
-          const data = await searchSeries(query, { limit: 50, offset: 0 });
-          if (cancelled) return;
+          const data = await searchSeries(query, { limit: 50, offset: 0 }, signal);
           setResults(data.series);
           setTotal(data.count);
         } catch (err) {
-          if (!cancelled) setError(err.message);
+          if (err.name === 'AbortError') return;
+          setError(err.message);
         }
       }
 
-      if (!cancelled) setLoading(false);
+      setLoading(false);
     }
 
     search();
-    return () => { cancelled = true; };
+    return () => controller.abort();
   }, [query]);
 
   const loadMore = async () => {

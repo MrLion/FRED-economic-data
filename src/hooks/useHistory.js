@@ -21,13 +21,21 @@ export function useHistory() {
         { id: series.id, title: series.title, frequency: series.frequency, viewedAt: Date.now() },
         ...filtered,
       ].slice(0, MAX_ITEMS);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        console.warn('Could not save history to localStorage');
+      }
       return next;
     });
   }, []);
 
   const clearHistory = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      console.warn('Could not clear history from localStorage');
+    }
     setItems([]);
   }, []);
 

@@ -20,7 +20,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 - **Full-Text Search** -- Search across all FRED series by keyword (GDP, unemployment, inflation, etc.)
 - **Natural Language Search** -- Ask questions like "How has inflation changed since COVID?" and AI extracts the optimal FRED search terms (powered by Claude)
 - **Real-Time Suggestions** -- Live dropdown with top 6 matching series as you type, with keyboard navigation
-- **Clear Button** -- One-tap × button to reset the search input
+- **Clear Button** -- One-tap button to reset the search input
 - **Paginated Results** -- Load more results incrementally with series count display
 
 ### History
@@ -28,22 +28,21 @@ A web application for browsing and visualizing economic data from the Federal Re
 - **Persistent Storage** -- History survives page refreshes via localStorage
 
 ### Settings
-- **API Key Management** -- Enter, validate, and change your FRED API key
-- **Anthropic API Key** -- Optional key for AI-powered chart analysis (get one at [console.anthropic.com](https://console.anthropic.com/))
 - **Clear History** -- Remove all recently viewed entries
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React 18 |
+| Framework | React 19 |
 | Build Tool | Vite |
-| Routing | React Router v6 |
+| Routing | React Router v7 |
 | Charts | Recharts |
-| AI Analysis | Claude API via Vercel serverless function |
-| API | FRED REST API (api.stlouisfed.org) |
-| Storage | localStorage (API key, history) |
+| AI Analysis | Claude API via Vercel serverless functions |
+| API | FRED REST API via server-side proxy |
+| Storage | localStorage (history only) |
 | Styling | Plain CSS with CSS custom properties |
+| Testing | Vitest |
 
 ## Getting Started
 
@@ -59,45 +58,56 @@ A web application for browsing and visualizing economic data from the Federal Re
 git clone https://github.com/MrLion/FRED-economic-data.git
 cd FRED-economic-data
 npm install
+cp .env.example .env   # Then fill in your API keys
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser and enter your FRED API key when prompted. To enable AI chart analysis, add your Anthropic API key in the Settings page.
+Open `http://localhost:5173` in your browser. The app loads directly -- no API key entry needed. AI features require `ANTHROPIC_API_KEY` in your `.env` file.
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `FRED_API_KEY` | Yes | FRED API key for data access |
+| `ANTHROPIC_API_KEY` | For AI | Anthropic API key for chart analysis and NL search |
+| `ANTHROPIC_MODEL` | No | Override AI model (default: `claude-3-haiku-20240307`) |
 
 ### Deploying to Vercel
 
-This project is configured for Vercel deployment with a `vercel.json` that handles:
-- FRED API proxying via rewrites (`/api/fred/*` to `api.stlouisfed.org`)
-- AI analysis via a serverless function (`/api/analyze`)
-- SPA routing (all routes fall back to `index.html`)
-
-Select **Vite** as the framework preset when importing the project.
+1. Import the project and select **Vite** as the framework preset
+2. Set `FRED_API_KEY` and `ANTHROPIC_API_KEY` in Vercel environment variables
+3. Deploy
 
 ## Project Structure
 
 ```
+api/
+  shared/
+    ai-config.js           # Shared AI prompts + model config
+  analyze.js               # Vercel serverless -- chart analysis
+  nl-search.js             # Vercel serverless -- NL search
+  fred-proxy.js            # Vercel serverless -- FRED API proxy
 src/
   api/
-    fred.js              # FRED API client -- all endpoint wrappers
+    fred.js                # FRED API client -- all endpoint wrappers
   components/
-    AiNarrator.jsx       # AI-powered chart analysis with Claude
-    ApiKeyPrompt.jsx     # First-run API key entry with validation
-    BottomNav.jsx        # Mobile bottom tab bar / desktop sidebar
-    Chart.jsx            # Recharts line chart with tooltips
-    Header.jsx           # Top bar with search and settings
-    Loading.jsx          # Loading spinner and error display
-    SeriesCard.jsx       # Card component for series lists
+    AiNarrator.jsx         # AI-powered chart analysis with Claude
+    BottomNav.jsx          # Mobile bottom tab bar / desktop sidebar
+    Chart.jsx              # Recharts line chart with tooltips
+    Header.jsx             # Top bar with search and settings
+    Loading.jsx            # Loading spinner and error display
+    SeriesCard.jsx         # Card component for series lists
   hooks/
-    useFred.js           # Generic async data fetching hook
-    useHistory.js        # Recently viewed localStorage hook
+    useFred.js             # Generic async data fetching hook
+    useHistory.js          # Recently viewed localStorage hook
   pages/
-    Home.jsx             # Category grid + recently viewed
-    Categories.jsx       # Hierarchical category browser
-    Search.jsx           # Search results with pagination
-    SeriesDetail.jsx     # Chart, metadata, and notes for a series
-    Sources.jsx          # Data sources with expandable releases
-    Releases.jsx         # Release list and release detail
-    Settings.jsx         # API key and history management
+    Home.jsx               # Category grid + recently viewed
+    Categories.jsx         # Hierarchical category browser
+    Search.jsx             # Search results with pagination + NL search
+    SeriesDetail.jsx       # Chart, metadata, and notes for a series
+    Sources.jsx            # Data sources with expandable releases
+    Releases.jsx           # Release list and release detail
+    Settings.jsx           # History management
 ```
 
 ## Responsive Design
@@ -107,24 +117,6 @@ The layout adapts across three breakpoints:
 - **Mobile** (< 640px) -- Bottom tab navigation, 2-column category grid, compact cards
 - **Tablet** (640px -- 1023px) -- 3-column grids, larger typography
 - **Desktop** (1024px+) -- Fixed sidebar navigation replaces bottom tabs, 4-column grids, wider chart area
-
-## API Proxy
-
-During development, the Vite dev server proxies `/api/fred/*` requests to `https://api.stlouisfed.org/fred/*` to avoid CORS restrictions. A custom Vite middleware also handles `/api/analyze` requests locally by proxying to the Anthropic API. In production on Vercel, both are handled by rewrites and a serverless function respectively.
-
-## FRED API Endpoints Used
-
-| Endpoint | Purpose |
-|----------|---------|
-| `category/children` | Browse category hierarchy |
-| `category/series` | List series in a category |
-| `series` | Series metadata |
-| `series/observations` | Data points for charts |
-| `series/search` | Full-text keyword search |
-| `sources` | List all data sources |
-| `source/releases` | Releases for a source |
-| `releases` | List all releases |
-| `release/series` | Series within a release |
 
 ## License
 

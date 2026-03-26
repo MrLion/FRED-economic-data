@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { AI_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
 
 // Dev-only middleware to handle /api/analyze (mirrors the Vercel serverless function)
 function analyzeApiPlugin() {
@@ -25,17 +26,6 @@ function analyzeApiPlugin() {
           return;
         }
 
-        const systemPrompt = `You are an expert economic data analyst. You explain economic data series from the Federal Reserve Economic Data (FRED) database in clear, accessible language.
-
-Given a statistical summary of a data series, provide a concise narrative (3-5 paragraphs) that covers:
-1. What this indicator measures and why it matters
-2. The overall trend over the available time period
-3. Notable patterns, peaks, troughs, or inflection points
-4. Recent behavior and what it suggests about current economic conditions
-5. Brief context about how this indicator relates to the broader economy
-
-Keep the tone professional but accessible. Use specific numbers from the summary. Do not use markdown formatting — write in plain paragraphs.`;
-
         const userMessage = `Analyze this FRED economic data series:\n\nSeries: ${seriesTitle} (${seriesId})\nUnits: ${units}\nFrequency: ${frequency}\nSeasonal Adjustment: ${seasonalAdjustment}\n\nStatistical Summary:\n${dataSummary}`;
 
         try {
@@ -47,9 +37,9 @@ Keep the tone professional but accessible. Use specific numbers from the summary
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-3-haiku-20240307',
+              model: AI_MODEL,
               max_tokens: 1024,
-              system: systemPrompt,
+              system: ANALYZE_SYSTEM_PROMPT,
               messages: [{ role: 'user', content: userMessage }],
             }),
           });
@@ -100,17 +90,6 @@ function nlSearchApiPlugin() {
           return;
         }
 
-        const systemPrompt = `You are a FRED (Federal Reserve Economic Data) search assistant. Given a natural language question about economic data, extract 1-3 optimal search terms that would find the most relevant FRED data series.
-
-Rules:
-- Return FRED series IDs when you know them (e.g., "CPIAUCSL" for CPI, "UNRATE" for unemployment rate, "GDP" for GDP)
-- Also include descriptive search terms as fallbacks (e.g., "consumer price index", "unemployment rate")
-- Maximum 3 search terms, ordered by relevance
-- Keep the explanation brief (one sentence)
-
-You MUST respond with valid JSON only, no other text. Format:
-{"searchTerms": ["TERM1", "TERM2"], "explanation": "Brief explanation of what you're searching for"}`;
-
         try {
           const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -120,9 +99,9 @@ You MUST respond with valid JSON only, no other text. Format:
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-3-haiku-20240307',
+              model: AI_MODEL,
               max_tokens: 256,
-              system: systemPrompt,
+              system: NL_SEARCH_SYSTEM_PROMPT,
               messages: [{ role: 'user', content: query }],
             }),
           });
@@ -159,22 +138,76 @@ You MUST respond with valid JSON only, no other text. Format:
   };
 }
 
+// Dev-only middleware to handle /api/fred-proxy (mirrors the Vercel serverless function)
+function fredProxyApiPlugin() {
+  return {
+    name: 'fred-proxy-api',
+    configureServer(server) {
+      server.middlewares.use('/api/fred-proxy', async (req, res) => {
+        if (req.method !== 'GET') {
+          res.statusCode = 405;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Method not allowed' }));
+          return;
+        }
+
+        const url = new URL(req.url, 'http://localhost');
+        const endpoint = url.searchParams.get('endpoint');
+
+        if (!endpoint) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'endpoint parameter required' }));
+          return;
+        }
+
+        if (endpoint.includes('..') || endpoint.startsWith('/')) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Invalid endpoint' }));
+          return;
+        }
+
+        const apiKey = process.env.FRED_API_KEY;
+        if (!apiKey) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'FRED API key not configured on server' }));
+          return;
+        }
+
+        const params = new URLSearchParams();
+        params.set('api_key', apiKey);
+        params.set('file_type', 'json');
+        for (const [k, v] of url.searchParams.entries()) {
+          if (k !== 'endpoint') params.set(k, v);
+        }
+
+        const fredUrl = `https://api.stlouisfed.org/fred/${endpoint}?${params.toString()}`;
+
+        try {
+          const response = await fetch(fredUrl);
+          const data = await response.text();
+          res.statusCode = response.status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(data);
+        } catch (err) {
+          res.statusCode = 502;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Failed to reach FRED API' }));
+        }
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load .env so ANTHROPIC_API_KEY is available in process.env for middleware
+  // Load .env so API keys are available in process.env for middleware
   const env = loadEnv(mode, process.cwd(), '');
   Object.assign(process.env, env);
 
   return {
-  plugins: [react(), analyzeApiPlugin(), nlSearchApiPlugin()],
-  server: {
-    proxy: {
-      '/api/fred': {
-        target: 'https://api.stlouisfed.org',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/fred/, '/fred'),
-      },
-    },
-  },
+  plugins: [react(), analyzeApiPlugin(), nlSearchApiPlugin(), fredProxyApiPlugin()],
   };
 })

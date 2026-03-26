@@ -1,5 +1,35 @@
 # Changelog
 
+## v2.0.0 - Architecture Pass (2026-03-26)
+
+### Security
+- **FRED API key moved server-side** -- API key is now injected by `api/fred-proxy.js` serverless function from `FRED_API_KEY` env var. Key never touches the browser (no URL params, no localStorage, no network tab exposure)
+- **Login gate removed** -- App loads directly without API key entry or CAPTCHA. Server-side key serves all users.
+
+### Fixed
+- **Search race condition** -- Replaced `let cancelled` boolean with `AbortController`. Signal threads through `nlSearch()` → `searchSeries()` → `fredFetch()` → `fetch()`. Rapid typing no longer shows stale results.
+- **NL detection heuristic** -- Now handles contractions (what's, how's) and raises word threshold from 5 to 6 to reduce false positives.
+- **localStorage error handling** -- All `localStorage` calls wrapped in try-catch for Safari private browsing and quota exceeded. Graceful defaults instead of silent crashes.
+- **AI prompt drift** -- Analyze prompt in vite.config.js was missing a clause present in the serverless version. Both now import from single source of truth.
+
+### Changed
+- **Shared AI config** -- `api/shared/ai-config.js` is the single source of truth for AI model, analyze prompt, and NL search prompt. Imported by both serverless functions and Vite middleware.
+- **AI model configurable** -- Set `ANTHROPIC_MODEL` env var to override the default `claude-3-haiku-20240307`.
+- **Observation limit** -- Reduced `getSeriesObservations()` limit from 100,000 to 10,000. Chart resamples to 500 points anyway.
+- **DRY refactor** -- Extracted `extractSeries()` helper to replace 8 occurrences of `data.seriess || []` in fred.js.
+
+### Removed
+- `src/components/ApiKeyPrompt.jsx` -- No longer needed (no login gate)
+- Client-side FRED key management functions (`getApiKey`, `setApiKey`, `hasApiKey`, `clearApiKey`, `isDemoKey`, `setDemoKey`)
+- FRED API rewrite in `vercel.json` (replaced by `api/fred-proxy.js`)
+- Vite proxy for `/api/fred` (replaced by `fredProxyApiPlugin` middleware)
+
+### Added
+- `api/fred-proxy.js` -- Vercel serverless function for FRED API proxying
+- `api/shared/ai-config.js` -- Shared AI configuration
+- `.env.example` -- Documents required environment variables
+- Vitest test suite with full coverage
+
 ## v1.3.0 - Search UX Improvements (2026-03-13)
 
 ### Added

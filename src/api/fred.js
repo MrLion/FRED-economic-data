@@ -1,34 +1,17 @@
-const BASE_PATH = '/api/fred';
-const DEMO_API_KEY = '311f23a1c836a93650d447f856d2d8b3';
+const extractSeries = (d) => d.seriess || [];
 
-function getApiKey() {
-  return localStorage.getItem('fred_api_key') || '';
-}
-
-export function isDemoKey() {
-  return getApiKey() === DEMO_API_KEY;
-}
-
-export function setDemoKey() {
-  localStorage.setItem('fred_api_key', DEMO_API_KEY);
-}
-
-async function fredFetch(endpoint, params = {}) {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error('No API key configured');
-
+async function fredFetch(endpoint, params = {}, signal) {
   const searchParams = new URLSearchParams();
-  searchParams.set('api_key', apiKey);
-  searchParams.set('file_type', 'json');
+  searchParams.set('endpoint', endpoint);
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) searchParams.set(k, String(v));
   });
 
-  const res = await fetch(`${BASE_PATH}/${endpoint}?${searchParams.toString()}`);
+  const res = await fetch(`/api/fred-proxy?${searchParams.toString()}`, { signal });
   if (!res.ok) {
     if (res.status === 400) {
       const data = await res.json().catch(() => null);
-      throw new Error(data?.error_message || 'Bad request — check your API key');
+      throw new Error(data?.error_message || data?.error || 'Bad request');
     }
     throw new Error(`FRED API error: ${res.status}`);
   }
@@ -52,18 +35,18 @@ export async function getCategorySeries(categoryId, opts = {}) {
     order_by: opts.order_by || 'popularity',
     sort_order: opts.sort_order || 'desc',
   });
-  return { series: data.seriess || [], count: data.count || 0 };
+  return { series: extractSeries(data), count: data.count || 0 };
 }
 
 export async function getSeries(seriesId) {
   const data = await fredFetch('series', { series_id: seriesId });
-  return (data.seriess || [])[0] || null;
+  return extractSeries(data)[0] || null;
 }
 
 export async function getSeriesObservations(seriesId, opts = {}) {
   const data = await fredFetch('series/observations', {
     series_id: seriesId,
-    limit: opts.limit || 100000,
+    limit: opts.limit || 10000,
     observation_start: opts.start,
     observation_end: opts.end,
     frequency: opts.frequency,
@@ -72,14 +55,14 @@ export async function getSeriesObservations(seriesId, opts = {}) {
   return (data.observations || []).filter(o => o.value !== '.');
 }
 
-export async function searchSeries(query, opts = {}) {
+export async function searchSeries(query, opts = {}, signal) {
   const data = await fredFetch('series/search', {
     search_text: query,
     limit: opts.limit || 50,
     offset: opts.offset || 0,
     order_by: opts.order_by || 'search_rank',
-  });
-  return { series: data.seriess || [], count: data.count || 0 };
+  }, signal);
+  return { series: extractSeries(data), count: data.count || 0 };
 }
 
 export async function getSources() {
@@ -108,34 +91,40 @@ export async function getReleaseSeries(releaseId) {
     order_by: 'popularity',
     sort_order: 'desc',
   });
-  return data.seriess || [];
+  return extractSeries(data);
 }
 
-export function setApiKey(key) {
-  localStorage.setItem('fred_api_key', key.trim());
-}
-
-export function hasApiKey() {
-  return !!localStorage.getItem('fred_api_key');
-}
-
-export function clearApiKey() {
-  localStorage.removeItem('fred_api_key');
-}
-
-// Anthropic API key management
+// Anthropic API key management — wrapped in try-catch for Safari private browsing / quota exceeded
 export function getAnthropicKey() {
-  return localStorage.getItem('anthropic_api_key') || '';
+  try {
+    return localStorage.getItem('anthropic_api_key') || '';
+  } catch {
+    console.warn('Could not read anthropic_api_key from localStorage');
+    return '';
+  }
 }
 
 export function setAnthropicKey(key) {
-  localStorage.setItem('anthropic_api_key', key.trim());
+  try {
+    localStorage.setItem('anthropic_api_key', key.trim());
+  } catch {
+    console.warn('Could not save anthropic_api_key to localStorage');
+  }
 }
 
 export function hasAnthropicKey() {
-  return !!localStorage.getItem('anthropic_api_key');
+  try {
+    return !!localStorage.getItem('anthropic_api_key');
+  } catch {
+    console.warn('Could not check anthropic_api_key in localStorage');
+    return false;
+  }
 }
 
 export function clearAnthropicKey() {
-  localStorage.removeItem('anthropic_api_key');
+  try {
+    localStorage.removeItem('anthropic_api_key');
+  } catch {
+    console.warn('Could not remove anthropic_api_key from localStorage');
+  }
 }
