@@ -99,6 +99,7 @@ function timeAgo(ts) {
 
 export default function Home({ recentlyViewed, clearHistory }) {
   const navigate = useNavigate();
+  const [showAllRecent, setShowAllRecent] = useState(false);
   const { data: categories, loading, error, refetch } = useFred(
     () => getCategoryChildren(0),
     []
@@ -141,7 +142,7 @@ export default function Home({ recentlyViewed, clearHistory }) {
           </div>
           <div className="recent-list-wrap">
             <div className="recent-list">
-              {recentlyViewed.slice(0, 6).map(item => (
+              {(showAllRecent ? recentlyViewed : recentlyViewed.slice(0, 6)).map(item => (
                 <div
                   key={item.id}
                   className="recent-card"
@@ -157,8 +158,8 @@ export default function Home({ recentlyViewed, clearHistory }) {
               ))}
             </div>
             {recentlyViewed.length > 6 && (
-              <button className="recent-see-all" onClick={() => navigate('/settings')}>
-                +{recentlyViewed.length - 6} more
+              <button className="recent-see-all" onClick={() => setShowAllRecent(v => !v)}>
+                {showAllRecent ? 'Show less' : `+${recentlyViewed.length - 6} more`}
               </button>
             )}
           </div>
