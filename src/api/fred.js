@@ -51,6 +51,7 @@ export async function getSeriesObservations(seriesId, opts = {}) {
     observation_end: opts.end,
     frequency: opts.frequency,
     units: opts.units,
+    sort_order: opts.sort_order,
   });
   return (data.observations || []).filter(o => o.value !== '.');
 }

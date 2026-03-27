@@ -30,6 +30,7 @@ function readHeroCache() {
     if (!raw) return null;
     const cached = JSON.parse(raw);
     if (Date.now() - cached.updatedAt > HERO_TTL) return null;
+    if (cached.value == null) return null; // don't serve a cached null value
     return cached;
   } catch {
     return null;
@@ -56,21 +57,22 @@ function useHeroIndicator() {
       try {
         const [info, obs] = await Promise.all([
           getSeries(seriesId),
-          getSeriesObservations(seriesId, { limit: 2 }),
+          // sort_order desc so obs[0] is the most recent observation
+          getSeriesObservations(seriesId, { limit: 2, sort_order: 'desc' }),
         ]);
         if (cancelled) return;
-        const current = obs.length > 0 ? Number(obs[obs.length - 1].value) : null;
-        const prior = obs.length > 1 ? Number(obs[obs.length - 2].value) : null;
+        const current = obs.length > 0 ? Number(obs[0].value) : null;
+        const prior = obs.length > 1 ? Number(obs[1].value) : null;
         const delta = prior && prior !== 0 ? ((current - prior) / Math.abs(prior)) * 100 : null;
         const data = {
           seriesId,
           name: info?.title || seriesId,
           value: current,
           delta,
-          date: obs.length > 0 ? obs[obs.length - 1].date : null,
+          date: obs.length > 0 ? obs[0].date : null,
         };
         setHero(data);
-        writeHeroCache(data);
+        if (data.value != null) writeHeroCache(data); // only cache valid data
       } catch {
         // fail silently — hero indicator is optional
       } finally {
