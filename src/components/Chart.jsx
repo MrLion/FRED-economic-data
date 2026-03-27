@@ -1,4 +1,4 @@
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceArea } from 'recharts';
 
 function formatValue(val) {
   const num = Number(val);
@@ -20,7 +20,7 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-export default function Chart({ observations, title }) {
+export default function Chart({ observations, title, recessionPeriods = [] }) {
   if (!observations?.length) return <p className="chart-empty">No data available</p>;
 
   const data = observations.map(o => ({
@@ -45,11 +45,23 @@ export default function Chart({ observations, title }) {
     maxVal + padding,
   ];
 
+  const dataStart = displayData[0]?.date ?? '';
+  const dataEnd = displayData[displayData.length - 1]?.date ?? '';
+  const visibleRecessions = recessionPeriods
+    .filter(r => r.end >= dataStart && r.start <= dataEnd)
+    .map(r => ({
+      x1: r.start < dataStart ? dataStart : r.start,
+      x2: r.end > dataEnd ? dataEnd : r.end,
+    }));
+
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={300} className="chart-responsive">
         <LineChart data={displayData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
           <CartesianGrid horizontal={true} vertical={false} stroke="#E2E8F0" />
+          {visibleRecessions.map((r, i) => (
+            <ReferenceArea key={i} x1={r.x1} x2={r.x2} fill="rgba(180,180,180,0.25)" stroke="none" />
+          ))}
           <XAxis
             dataKey="date"
             tick={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Geist Mono', monospace" }}

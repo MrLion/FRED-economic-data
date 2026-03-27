@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getSeries, getSeriesObservations } from '../api/fred';
+import { getSeries, getSeriesObservations, getRecessionPeriods } from '../api/fred';
 import Chart from '../components/Chart';
 import AiNarrator from '../components/AiNarrator';
 import Loading, { ErrorMessage } from '../components/Loading';
@@ -35,6 +35,7 @@ export default function SeriesDetail({ onView }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [range, setRange] = useState('Max');
+  const [recessionPeriods, setRecessionPeriods] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,13 +43,15 @@ export default function SeriesDetail({ onView }) {
       setLoading(true);
       setError(null);
       try {
-        const [seriesData, obsData] = await Promise.all([
+        const [seriesData, obsData, recessions] = await Promise.all([
           getSeries(id),
           getSeriesObservations(id),
+          getRecessionPeriods(),
         ]);
         if (cancelled) return;
         setSeries(seriesData);
         setObservations(obsData);
+        setRecessionPeriods(recessions);
         if (seriesData) {
           onView({ id: seriesData.id, title: seriesData.title, frequency: seriesData.frequency });
         }
@@ -114,7 +117,7 @@ export default function SeriesDetail({ onView }) {
         ))}
       </div>
 
-      <Chart observations={filteredObs} title={series.title} />
+      <Chart observations={filteredObs} title={series.title} recessionPeriods={recessionPeriods} />
 
       {/* Insight zone */}
       <AiNarrator series={series} observations={filteredObs} />

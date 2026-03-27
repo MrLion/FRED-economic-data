@@ -94,6 +94,26 @@ export async function getReleaseSeries(releaseId) {
   return extractSeries(data);
 }
 
+let _recessionCache = null;
+
+export async function getRecessionPeriods() {
+  if (_recessionCache) return _recessionCache;
+  const obs = await getSeriesObservations('USREC', { limit: 10000 });
+  const periods = [];
+  let start = null;
+  for (const o of obs) {
+    if (Number(o.value) === 1 && !start) {
+      start = o.date;
+    } else if (Number(o.value) === 0 && start) {
+      periods.push({ start, end: o.date });
+      start = null;
+    }
+  }
+  if (start) periods.push({ start, end: new Date().toISOString().split('T')[0] });
+  _recessionCache = periods;
+  return periods;
+}
+
 // Anthropic API key management — wrapped in try-catch for Safari private browsing / quota exceeded
 export function getAnthropicKey() {
   try {
