@@ -65,9 +65,16 @@ export default function Chart({ observations, title, recessionPeriods = [] }) {
     ? recessionPeriods
         .filter(r => r.end >= dataStart && r.start <= dataEnd)
         .map(r => {
-          const x1 = dates.find(d => d >= r.start) ?? dataStart;
-          const x2 = [...dates].reverse().find(d => d <= r.end) ?? dataEnd;
-          return x1 <= x2 ? { x1, x2 } : null;
+          const x1 = dates.find(d => d >= r.start);
+          const x2 = [...dates].reverse().find(d => d <= r.end);
+          // Normal case: recession spans multiple observations
+          if (x1 && x2 && x1 < x2) return { x1, x2 };
+          // Recession falls within a single observation gap (e.g. 2001 or COVID on annual
+          // data) or snaps to the same point — show the annual bucket it lands in instead
+          const anchor = [...dates].reverse().find(d => d <= r.end) ?? dates.find(d => d >= r.start);
+          if (!anchor) return null;
+          const idx = dates.indexOf(anchor);
+          return idx < dates.length - 1 ? { x1: anchor, x2: dates[idx + 1] } : null;
         })
         .filter(Boolean)
     : [];
