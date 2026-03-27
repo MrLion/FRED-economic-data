@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getSources, getSourceReleases } from '../api/fred';
 import { useFred } from '../hooks/useFred';
 import Loading, { ErrorMessage } from '../components/Loading';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export default function Sources() {
   const navigate = useNavigate();
@@ -48,13 +49,10 @@ export default function Sources() {
                   <p className="source-link">{source.link}</p>
                 )}
               </div>
-              <svg
-                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className={`source-chevron ${expanded === source.id ? 'expanded' : ''}`}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+              {expanded === source.id
+                ? <ChevronDown size={16} className="source-chevron expanded" />
+                : <ChevronDown size={16} className="source-chevron" />
+              }
             </div>
 
             {expanded === source.id && (
@@ -69,9 +67,7 @@ export default function Sources() {
                       onClick={() => navigate(`/release/${rel.id}`)}
                     >
                       <span className="release-name">{rel.name}</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
+                      <ChevronRight size={14} />
                     </div>
                   ))
                 ) : (

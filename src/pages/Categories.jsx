@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getCategoryChildren, getCategorySeries, getCategory } from '../api/fred';
 import SeriesCard from '../components/SeriesCard';
 import Loading, { ErrorMessage } from '../components/Loading';
+import { ChevronRight } from 'lucide-react';
 
 export default function Categories() {
   const { id } = useParams();
@@ -78,9 +79,7 @@ export default function Categories() {
               onClick={() => navigate(`/categories/${cat.id}`)}
             >
               <span className="category-list-name">{cat.name}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <ChevronRight size={16} />
             </div>
           ))}
         </div>

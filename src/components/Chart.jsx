@@ -14,8 +14,8 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="chart-tooltip">
-      <p className="chart-tooltip-date">{label}</p>
-      <p className="chart-tooltip-value">{Number(payload[0].value).toLocaleString()}</p>
+      <p className="chart-tooltip-date" style={{ fontFamily: "'Geist Mono', monospace" }}>{label}</p>
+      <p className="chart-tooltip-value" style={{ fontFamily: "'Satoshi', sans-serif" }}>{Number(payload[0].value).toLocaleString()}</p>
     </div>
   );
 }
@@ -35,35 +35,38 @@ export default function Chart({ observations, title }) {
 
   return (
     <div className="chart-container">
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={300} className="chart-responsive">
         <LineChart data={displayData} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+          <CartesianGrid horizontal={true} vertical={false} stroke="#E2E8F0" />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 11, fill: '#666' }}
-            tickFormatter={(d) => {
-              const year = d.substring(0, 4);
-              return year;
-            }}
+            tick={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Geist Mono', monospace" }}
+            tickFormatter={(d) => d.substring(0, 4)}
             interval="preserveStartEnd"
             minTickGap={40}
+            axisLine={false}
+            tickLine={false}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: '#666' }}
+            tick={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Geist Mono', monospace" }}
             tickFormatter={formatValue}
             width={55}
+            orientation="right"
+            axisLine={false}
+            tickLine={false}
           />
           <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
             dataKey="value"
-            stroke="#003A70"
+            stroke="#1B3A5C"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4, fill: '#003A70' }}
+            activeDot={{ r: 4, fill: '#1B3A5C', stroke: '#fff', strokeWidth: 2 }}
           />
         </LineChart>
       </ResponsiveContainer>
+      <p className="chart-source">Source: Federal Reserve Economic Data (FRED)</p>
     </div>
   );
 }

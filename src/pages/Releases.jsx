@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getReleases, getReleaseSeries } from '../api/fred';
 import SeriesCard from '../components/SeriesCard';
 import Loading, { ErrorMessage } from '../components/Loading';
+import { ChevronRight } from 'lucide-react';
 
 export default function Releases() {
   const { id } = useParams();
@@ -49,9 +50,7 @@ function ReleasesList() {
             onClick={() => navigate(`/release/${rel.id}`)}
           >
             <span className="category-list-name">{rel.name}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <ChevronRight size={16} />
           </div>
         ))}
       </div>

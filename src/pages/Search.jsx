@@ -4,6 +4,7 @@ import { searchSeries } from '../api/fred';
 import { getAnthropicKey } from '../api/fred';
 import SeriesCard from '../components/SeriesCard';
 import Loading, { ErrorMessage } from '../components/Loading';
+import { Sparkles, Search as SearchIcon } from 'lucide-react';
 
 function isNaturalLanguage(query) {
   const q = query.toLowerCase().trim();
@@ -138,12 +139,9 @@ export default function Search() {
     return (
       <div className="page">
         <div className="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <SearchIcon size={48} />
           <p>Search for economic data series</p>
-          <p style={{ fontSize: 13, color: '#999', marginTop: 4 }}>
+          <p style={{ fontSize: 13, marginTop: 4 }}>
             Try natural language: "How has inflation changed since 2020?"
           </p>
         </div>
@@ -158,14 +156,14 @@ export default function Search() {
       {/* AI interpretation banner */}
       {aiLoading && (
         <div className="ai-search-banner ai-search-loading">
-          <span className="ai-search-icon">&#10024;</span>
+          <Sparkles size={16} className="ai-search-icon" color="#0D9488" />
           <span>AI is interpreting your question...</span>
         </div>
       )}
 
       {aiExplanation && !aiLoading && (
         <div className="ai-search-banner">
-          <span className="ai-search-icon">&#10024;</span>
+          <Sparkles size={16} className="ai-search-icon" color="#0D9488" />
           <div className="ai-search-content">
             <span className="ai-search-explanation">{aiExplanation}</span>
             {aiTerms && aiTerms.length > 0 && (

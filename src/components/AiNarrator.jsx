@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getAnthropicKey } from '../api/fred';
+import { Sparkles, AlertTriangle, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 function computeDataSummary(observations) {
   if (!observations || observations.length === 0) return null;
@@ -119,7 +120,7 @@ export default function AiNarrator({ series, observations }) {
   if (!narrative && !loading && !error) {
     return (
       <button className="ai-narrator-btn" onClick={handleAnalyze}>
-        <span className="ai-narrator-btn-icon">&#10024;</span>
+        <Sparkles size={16} />
         Explain this chart
       </button>
     );
@@ -130,7 +131,7 @@ export default function AiNarrator({ series, observations }) {
     return (
       <div className="ai-narrator-card">
         <div className="ai-narrator-card-header">
-          <span className="ai-narrator-icon">&#10024;</span>
+          <Sparkles size={18} className="ai-narrator-icon" color="#0D9488" />
           <span className="ai-narrator-card-title">Analyzing...</span>
         </div>
         <div className="ai-narrator-skeleton">
@@ -149,9 +150,9 @@ export default function AiNarrator({ series, observations }) {
     return (
       <div className="ai-narrator-card ai-narrator-error">
         <div className="ai-narrator-card-header">
-          <span className="ai-narrator-icon">&#9888;</span>
+          <AlertTriangle size={18} className="ai-narrator-icon" />
           <span className="ai-narrator-card-title">Analysis Error</span>
-          <button className="ai-narrator-dismiss" onClick={handleDismiss} aria-label="Dismiss">&#10005;</button>
+          <button className="ai-narrator-dismiss" onClick={handleDismiss} aria-label="Dismiss"><X size={14} /></button>
         </div>
         <p className="ai-narrator-text">{error}</p>
         <button className="ai-narrator-retry" onClick={handleAnalyze}>Try again</button>
@@ -163,7 +164,7 @@ export default function AiNarrator({ series, observations }) {
   return (
     <div className="ai-narrator-card">
       <div className="ai-narrator-card-header">
-        <span className="ai-narrator-icon">&#10024;</span>
+        <Sparkles size={18} className="ai-narrator-icon" color="#0D9488" />
         <span className="ai-narrator-card-title">AI Analysis</span>
         <div className="ai-narrator-actions">
           <button
@@ -171,9 +172,9 @@ export default function AiNarrator({ series, observations }) {
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
-            {collapsed ? '\u25BC' : '\u25B2'}
+            {collapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
           </button>
-          <button className="ai-narrator-dismiss" onClick={handleDismiss} aria-label="Dismiss">&times;</button>
+          <button className="ai-narrator-dismiss" onClick={handleDismiss} aria-label="Dismiss"><X size={14} /></button>
         </div>
       </div>
       {!collapsed && (

@@ -4,6 +4,7 @@ import { getSeries, getSeriesObservations } from '../api/fred';
 import Chart from '../components/Chart';
 import AiNarrator from '../components/AiNarrator';
 import Loading, { ErrorMessage } from '../components/Loading';
+import { TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 
 const RANGES = [
   { label: '1Y', years: 1 },
@@ -11,6 +12,21 @@ const RANGES = [
   { label: '10Y', years: 10 },
   { label: 'Max', years: null },
 ];
+
+function DeltaChip({ current, prior }) {
+  if (prior === 0 || prior == null || current == null) {
+    return <span className="delta-chip delta-na">N/A</span>;
+  }
+  const delta = ((current - prior) / Math.abs(prior)) * 100;
+  const isPositive = delta >= 0;
+  const Icon = isPositive ? TrendingUp : TrendingDown;
+  return (
+    <span className={`delta-chip ${isPositive ? 'delta-positive' : 'delta-negative'}`}>
+      <Icon size={14} />
+      {isPositive ? '+' : ''}{delta.toFixed(1)}%
+    </span>
+  );
+}
 
 export default function SeriesDetail({ onView }) {
   const { id } = useParams();
@@ -60,21 +76,32 @@ export default function SeriesDetail({ onView }) {
   })();
 
   const latest = observations.length > 0 ? observations[observations.length - 1] : null;
+  const prior = observations.length > 1 ? observations[observations.length - 2] : null;
 
   return (
     <div className="page series-detail-page">
+      {/* Identity zone */}
       <div className="series-detail-header">
         <span className="series-detail-id">{series.id}</span>
         <h1 className="series-detail-title">{series.title}</h1>
       </div>
 
+      {/* Hero number zone */}
       {latest && (
         <div className="series-detail-latest">
           <span className="latest-value">{Number(latest.value).toLocaleString()}</span>
-          <span className="latest-date">{latest.date}</span>
+          {series.units && <span className="latest-units">{series.units}</span>}
+          <div className="latest-meta">
+            <DeltaChip
+              current={Number(latest.value)}
+              prior={prior ? Number(prior.value) : null}
+            />
+            <span className="latest-date">{latest.date}</span>
+          </div>
         </div>
       )}
 
+      {/* Chart zone */}
       <div className="range-selector">
         {RANGES.map(r => (
           <button
@@ -89,8 +116,10 @@ export default function SeriesDetail({ onView }) {
 
       <Chart observations={filteredObs} title={series.title} />
 
+      {/* Insight zone */}
       <AiNarrator series={series} observations={filteredObs} />
 
+      {/* Provenance zone */}
       <div className="series-meta">
         <div className="meta-row">
           <span className="meta-label">Units</span>
@@ -120,6 +149,16 @@ export default function SeriesDetail({ onView }) {
           <p>{series.notes}</p>
         </div>
       )}
+
+      <a
+        className="fred-link"
+        href={`https://fred.stlouisfed.org/series/${series.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <ExternalLink size={14} />
+        View on FRED
+      </a>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { AlertTriangle } from 'lucide-react';
+
 export default function Loading({ text = 'Loading...' }) {
   return (
     <div className="loading">
@@ -10,13 +12,29 @@ export default function Loading({ text = 'Loading...' }) {
 export function ErrorMessage({ message, onRetry }) {
   return (
     <div className="error-message">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c62828" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-        <line x1="9" y1="9" x2="15" y2="15" />
-      </svg>
+      <AlertTriangle size={24} color="var(--error)" />
       <p>{message}</p>
       {onRetry && <button className="btn-secondary" onClick={onRetry}>Retry</button>}
+    </div>
+  );
+}
+
+export function Skeleton({ width = '100%', height = '16px', borderRadius = 'var(--radius-sm)' }) {
+  return (
+    <div
+      className="skeleton"
+      style={{ width, height, borderRadius }}
+    />
+  );
+}
+
+export function EmptyState({ icon: Icon, headline, body, action }) {
+  return (
+    <div className="empty-state">
+      {Icon && <Icon size={48} />}
+      {headline && <h3 className="empty-state-headline">{headline}</h3>}
+      {body && <p className="empty-state-body">{body}</p>}
+      {action}
     </div>
   );
 }
