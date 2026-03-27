@@ -707,6 +707,8 @@ body {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .recent-list::-webkit-scrollbar {
@@ -1717,5 +1719,23 @@ body {
   .home-hero h1 {
     font-size: var(--text-h1);
     letter-spacing: -0.02em;
+  }
+
+  /* Recently Viewed — grid on desktop, no scroll needed */
+  .recent-list-wrap::after {
+    display: none;
+  }
+
+  .recent-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-x: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0;
+  }
+
+  .recent-card {
+    min-width: 0;
+    max-width: none;
   }
 }
