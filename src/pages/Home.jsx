@@ -84,7 +84,20 @@ function useHeroIndicator() {
   return { hero, heroLoading };
 }
 
-export default function Home({ recentlyViewed }) {
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'yesterday';
+  return `${days}d ago`;
+}
+
+export default function Home({ recentlyViewed, clearHistory }) {
   const navigate = useNavigate();
   const { data: categories, loading, error, refetch } = useFred(
     () => getCategoryChildren(0),
@@ -122,18 +135,32 @@ export default function Home({ recentlyViewed }) {
 
       {recentlyViewed.length > 0 && (
         <section className="home-section">
-          <h2>Recently Viewed</h2>
-          <div className="recent-list">
-            {recentlyViewed.slice(0, 6).map(item => (
-              <div
-                key={item.id}
-                className="recent-card"
-                onClick={() => navigate(`/series/${item.id}`)}
-              >
-                <span className="recent-card-id">{item.id}</span>
-                <p className="recent-card-title">{item.title}</p>
-              </div>
-            ))}
+          <div className="home-section-header">
+            <h2>Recently Viewed</h2>
+            <button className="recent-clear-btn" onClick={clearHistory}>Clear</button>
+          </div>
+          <div className="recent-list-wrap">
+            <div className="recent-list">
+              {recentlyViewed.slice(0, 6).map(item => (
+                <div
+                  key={item.id}
+                  className="recent-card"
+                  onClick={() => navigate(`/series/${item.id}`)}
+                >
+                  <div className="recent-card-top">
+                    <span className="recent-card-id">{item.id}</span>
+                    {item.viewedAt && <span className="recent-card-time">{timeAgo(item.viewedAt)}</span>}
+                  </div>
+                  <p className="recent-card-title">{item.title}</p>
+                  {item.frequency && <span className="recent-card-freq">{item.frequency}</span>}
+                </div>
+              ))}
+            </div>
+            {recentlyViewed.length > 6 && (
+              <button className="recent-see-all" onClick={() => navigate('/settings')}>
+                +{recentlyViewed.length - 6} more
+              </button>
+            )}
           </div>
         </section>
       )}

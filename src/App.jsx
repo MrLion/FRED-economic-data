@@ -23,7 +23,7 @@ export default function App() {
         <Header />
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home recentlyViewed={recentlyViewed} />} />
+            <Route path="/" element={<Home recentlyViewed={recentlyViewed} clearHistory={clearHistory} />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/categories/:id" element={<Categories />} />
             <Route path="/sources" element={<Sources />} />
