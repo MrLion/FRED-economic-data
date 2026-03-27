@@ -33,6 +33,18 @@ export default function Chart({ observations, title }) {
   const step = Math.max(1, Math.floor(data.length / maxPoints));
   const displayData = data.filter((_, i) => i % step === 0 || i === data.length - 1);
 
+  // Auto-scale Y-axis to data range with 10% padding so low-variability
+  // series fill the chart area instead of being compressed to a flat line
+  const values = displayData.map(d => d.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal;
+  const padding = range > 0 ? range * 0.1 : Math.abs(maxVal) * 0.1 || 1;
+  const yDomain = [
+    minVal - padding,
+    maxVal + padding,
+  ];
+
   return (
     <div className="chart-container">
       <ResponsiveContainer width="100%" height={300} className="chart-responsive">
@@ -48,6 +60,7 @@ export default function Chart({ observations, title }) {
             tickLine={false}
           />
           <YAxis
+            domain={yDomain}
             tick={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Geist Mono', monospace" }}
             tickFormatter={formatValue}
             width={55}
