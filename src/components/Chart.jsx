@@ -47,12 +47,30 @@ export default function Chart({ observations, title, recessionPeriods = [] }) {
 
   const dataStart = displayData[0]?.date ?? '';
   const dataEnd = displayData[displayData.length - 1]?.date ?? '';
-  const visibleRecessions = recessionPeriods
-    .filter(r => r.end >= dataStart && r.start <= dataEnd)
-    .map(r => ({
-      x1: r.start < dataStart ? dataStart : r.start,
-      x2: r.end > dataEnd ? dataEnd : r.end,
-    }));
+
+  // Only show recession shading when observations are dense enough to be meaningful.
+  // Decennial Census data (avg gap ~3650d) produces misleadingly wide bands because
+  // recharts' categorical axis gives equal width to every data point regardless of
+  // the time it represents.
+  const avgGapDays = displayData.length > 1
+    ? (new Date(dataEnd) - new Date(dataStart)) / (displayData.length - 1) / 86400000
+    : Infinity;
+  const showRecessions = avgGapDays < 550; // monthly=~30, quarterly=~90, annual=~365, decennial=~3650
+
+  const dates = displayData.map(d => d.date);
+  // Snap recession boundaries to actual observation dates — recharts ReferenceArea
+  // requires x1/x2 to exist in the data array. For monthly USREC boundary dates
+  // that don't match quarterly/annual observations, snapping prevents broken rendering.
+  const visibleRecessions = showRecessions
+    ? recessionPeriods
+        .filter(r => r.end >= dataStart && r.start <= dataEnd)
+        .map(r => {
+          const x1 = dates.find(d => d >= r.start) ?? dataStart;
+          const x2 = [...dates].reverse().find(d => d <= r.end) ?? dataEnd;
+          return x1 <= x2 ? { x1, x2 } : null;
+        })
+        .filter(Boolean)
+    : [];
 
   return (
     <div className="chart-container">
