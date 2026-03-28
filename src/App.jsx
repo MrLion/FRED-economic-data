@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useHistory } from './hooks/useHistory';
 import Header from './components/Header';
@@ -16,11 +17,12 @@ try { localStorage.removeItem('fred_api_key'); } catch { /* ignore */ }
 
 export default function App() {
   const { recentlyViewed, addToHistory, clearHistory } = useHistory();
+  const [navOpen, setNavOpen] = useState(false);
 
   return (
     <BrowserRouter>
       <div className="app">
-        <Header />
+        <Header onMenuToggle={() => setNavOpen(v => !v)} />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home recentlyViewed={recentlyViewed} clearHistory={clearHistory} />} />
@@ -34,7 +36,7 @@ export default function App() {
             <Route path="/settings" element={<Settings clearHistory={clearHistory} />} />
           </Routes>
         </main>
-        <BottomNav />
+        <BottomNav open={navOpen} onClose={() => setNavOpen(false)} />
       </div>
     </BrowserRouter>
   );

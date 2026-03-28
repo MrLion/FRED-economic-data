@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { searchSeries } from '../api/fred';
-import { ChevronLeft, Search, X } from 'lucide-react';
+import { ChevronLeft, Search, X, Menu } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ onMenuToggle }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -110,6 +110,9 @@ export default function Header() {
     <header className="header">
       <div className="header-inner">
         <div className="header-left">
+          <button className="header-hamburger" onClick={onMenuToggle} aria-label="Toggle navigation">
+            <Menu size={20} />
+          </button>
           {showBack && (
             <button className="header-back" onClick={() => navigate(-1)} aria-label="Go back">
               <ChevronLeft size={20} />

@@ -1656,16 +1656,62 @@ body {
   }
 }
 
+/* Backdrop for nav drawer (desktop only) */
+.nav-backdrop {
+  display: none;
+}
+
+/* Hamburger — hidden on mobile (bottom nav handles it), shown on desktop */
+.header-hamburger {
+  display: none;
+}
+
 @media (min-width: 1024px) {
   :root {
     --bottom-nav-height: 0px;
   }
 
-  .main-content {
-    padding-bottom: 0;
+  .header-hamburger {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
   }
 
+  .header-hamburger:hover {
+    background: var(--primary-bg);
+    color: var(--primary);
+  }
+
+  .nav-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 199;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .nav-backdrop.nav-backdrop-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .main-content {
+    padding-bottom: 0;
+  }
+
+  /* Drawer — hidden off-screen, slides in when .nav-open */
   .bottom-nav {
     position: fixed;
     top: var(--header-height);
@@ -1679,6 +1725,15 @@ body {
     border-top: none;
     border-right: 1px solid var(--border);
     gap: 4px;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+
+  .bottom-nav.nav-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
   }
 
   .bottom-nav-item {
@@ -1696,9 +1751,10 @@ body {
   }
 
   .main-content {
-    margin-left: 220px;
-    max-width: none;
-    width: calc(100% - 220px);
+    margin-left: 0;
+    max-width: var(--max-width);
+    width: 100%;
+    margin: 0 auto;
     overflow-x: hidden;
   }
 
