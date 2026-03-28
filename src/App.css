@@ -1873,10 +1873,21 @@ body {
   padding: 12px 14px;
   cursor: pointer;
   transition: background 0.1s;
+  min-height: 72px;
 }
 
 .recent-mini-card:hover {
   background: var(--border-light);
+}
+
+.recent-mini-card--empty {
+  background: none;
+  border: 1px dashed var(--border);
+  cursor: default;
+}
+
+.recent-mini-card--empty:hover {
+  background: none;
 }
 
 /* ===== Desktop overrides for Variant C ===== */

@@ -138,13 +138,21 @@ export default function Home({ recentlyViewed, clearHistory }) {
       <div className="home-two-col">
 
         {/* Recently Viewed */}
-        <div>
-          {recentlyViewed.length > 0 && (
-            <section className="home-section">
-              <div className="home-section-header">
-                <h2>Recently Viewed</h2>
-                <button className="recent-clear-btn" onClick={clearHistory}>Clear</button>
-              </div>
+        <section className="home-section">
+          <div className="home-section-header">
+            <h2>Recently Viewed</h2>
+            {recentlyViewed.length > 0 && (
+              <button className="recent-clear-btn" onClick={clearHistory}>Clear</button>
+            )}
+          </div>
+          {recentlyViewed.length === 0 ? (
+            <div className="recent-mini-grid">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="recent-mini-card recent-mini-card--empty" />
+              ))}
+            </div>
+          ) : (
+            <>
               <div className="recent-mini-grid">
                 {(showAllRecent ? recentlyViewed : recentlyViewed.slice(0, 6)).map(item => (
                   <div key={item.id} className="recent-mini-card" onClick={() => navigate(`/series/${item.id}`)}>
@@ -162,9 +170,9 @@ export default function Home({ recentlyViewed, clearHistory }) {
                   {showAllRecent ? 'Show less' : `+${recentlyViewed.length - 6} more`}
                 </button>
               )}
-            </section>
+            </>
           )}
-        </div>
+        </section>
 
         {/* Browse Categories */}
         <section className="home-section">
