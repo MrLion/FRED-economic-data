@@ -1795,3 +1795,106 @@ body {
     max-width: none;
   }
 }
+
+/* ===== Key Indicators (Variant C home layout) ===== */
+.key-indicators-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.key-indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.key-indicator-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.key-indicator-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.ki-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ki-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.ki-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ===== Home two-column layout ===== */
+.home-two-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ===== Recently Viewed mini grid ===== */
+.recent-mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.recent-mini-card {
+  background: var(--bg-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.recent-mini-card:hover {
+  background: var(--border-light);
+}
+
+/* ===== Desktop overrides for Variant C ===== */
+@media (min-width: 1024px) {
+  .key-indicators-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .home-two-col {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .home-two-col .category-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
