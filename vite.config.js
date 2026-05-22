@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
 
 // Dev-only middleware to handle /api/analyze (mirrors the Vercel serverless function)
 function analyzeApiPlugin() {
@@ -16,31 +16,34 @@ function analyzeApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { apiKey: clientKey, seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = JSON.parse(body);
-        const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
+        const { seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = JSON.parse(body);
 
-        if (!apiKey || !dataSummary) {
+        if (!OLLAMA_BASE_URL || !OLLAMA_MODEL) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Ollama is not configured on the server' }));
+          return;
+        }
+        if (!dataSummary) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Missing apiKey or dataSummary' }));
+          res.end(JSON.stringify({ error: 'Missing dataSummary' }));
           return;
         }
 
         const userMessage = `Analyze this FRED economic data series:\n\nSeries: ${seriesTitle} (${seriesId})\nUnits: ${units}\nFrequency: ${frequency}\nSeasonal Adjustment: ${seasonalAdjustment}\n\nStatistical Summary:\n${dataSummary}`;
 
         try {
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
+          const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-              'anthropic-version': '2023-06-01',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: OLLAMA_MODEL,
-              max_tokens: 1024,
-              system: ANALYZE_SYSTEM_PROMPT,
-              messages: [{ role: 'user', content: userMessage }],
+              messages: [
+                { role: 'system', content: ANALYZE_SYSTEM_PROMPT },
+                { role: 'user', content: userMessage },
+              ],
+              stream: false,
             }),
           });
 
@@ -49,11 +52,11 @@ function analyzeApiPlugin() {
 
           if (!response.ok) {
             res.statusCode = response.status === 401 ? 401 : 502;
-            res.end(JSON.stringify({ error: data?.error?.message || `API error: ${response.status}` }));
+            res.end(JSON.stringify({ error: data?.error || `API error: ${response.status}` }));
             return;
           }
 
-          const narrative = data?.content?.[0]?.text || 'No analysis generated.';
+          const narrative = data?.message?.content || 'No analysis generated.';
           res.end(JSON.stringify({ narrative }));
         } catch (err) {
           res.statusCode = 500;
@@ -80,29 +83,32 @@ function nlSearchApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { apiKey: clientKey, query } = JSON.parse(body);
-        const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
+        const { query } = JSON.parse(body);
 
-        if (!apiKey || !query) {
+        if (!OLLAMA_BASE_URL || !OLLAMA_MODEL) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Ollama is not configured on the server' }));
+          return;
+        }
+        if (!query) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Missing apiKey or query' }));
+          res.end(JSON.stringify({ error: 'Missing query' }));
           return;
         }
 
         try {
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
+          const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-              'anthropic-version': '2023-06-01',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: OLLAMA_MODEL,
-              max_tokens: 256,
-              system: NL_SEARCH_SYSTEM_PROMPT,
-              messages: [{ role: 'user', content: query }],
+              messages: [
+                { role: 'system', content: NL_SEARCH_SYSTEM_PROMPT },
+                { role: 'user', content: query },
+              ],
+              stream: false,
             }),
           });
 
@@ -111,11 +117,11 @@ function nlSearchApiPlugin() {
 
           if (!response.ok) {
             res.statusCode = response.status === 401 ? 401 : 502;
-            res.end(JSON.stringify({ error: data?.error?.message || `API error: ${response.status}` }));
+            res.end(JSON.stringify({ error: data?.error || `API error: ${response.status}` }));
             return;
           }
 
-          const text = data?.content?.[0]?.text || '';
+          const text = data?.message?.content || '';
           try {
             const parsed = JSON.parse(text);
             res.end(JSON.stringify({
