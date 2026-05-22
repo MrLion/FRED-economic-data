@@ -1,44 +1,41 @@
-import { OLLAMA_MODEL, NL_SEARCH_SYSTEM_PROMPT } from './shared/ai-config.js';
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, NL_SEARCH_SYSTEM_PROMPT } from './shared/ai-config.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { apiKey: clientKey, query } = req.body || {};
-  const apiKey = clientKey || process.env.ANTHROPIC_API_KEY;
+  const { query } = req.body || {};
 
-  if (!apiKey) {
-    return res.status(400).json({ error: 'Anthropic API key is required' });
+  if (!OLLAMA_BASE_URL || !OLLAMA_MODEL) {
+    return res.status(500).json({ error: 'Ollama is not configured on the server' });
   }
   if (!query) {
     return res.status(400).json({ error: 'Query is required' });
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: OLLAMA_MODEL,
-        max_tokens: 256,
-        system: NL_SEARCH_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: query }],
+        messages: [
+          { role: 'system', content: NL_SEARCH_SYSTEM_PROMPT },
+          { role: 'user', content: query },
+        ],
+        stream: false,
       }),
     });
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      const msg = errData?.error?.message || `Anthropic API error: ${response.status}`;
+      const msg = errData?.error || `Ollama API error: ${response.status}`;
       return res.status(response.status === 401 ? 401 : 502).json({ error: msg });
     }
 
     const data = await response.json();
-    const text = data?.content?.[0]?.text || '';
+    const text = data?.message?.content || '';
 
     try {
       const parsed = JSON.parse(text);
@@ -47,7 +44,6 @@ export default async function handler(req, res) {
         explanation: parsed.explanation || '',
       });
     } catch {
-      // If Claude didn't return valid JSON, extract what we can
       return res.status(200).json({
         searchTerms: [query],
         explanation: 'Could not interpret query — using original search terms.',
