@@ -1,6 +1,12 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { OLLAMA_BASE_URL, OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_API_KEY, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
+
+function ollamaHeaders() {
+  const h = { 'Content-Type': 'application/json' };
+  if (OLLAMA_API_KEY) h['Authorization'] = `Bearer ${OLLAMA_API_KEY}`;
+  return h;
+}
 
 // Dev-only middleware to handle /api/analyze (mirrors the Vercel serverless function)
 function analyzeApiPlugin() {
@@ -43,9 +49,10 @@ function analyzeApiPlugin() {
         const userMessage = `Analyze this FRED economic data series:\n\nSeries: ${seriesTitle} (${seriesId})\nUnits: ${units}\nFrequency: ${frequency}\nSeasonal Adjustment: ${seasonalAdjustment}\n\nStatistical Summary:\n${dataSummary}`;
 
         try {
+          const headers = ollamaHeaders();
           const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               model: OLLAMA_MODEL,
               messages: [
@@ -118,9 +125,10 @@ function nlSearchApiPlugin() {
         }
 
         try {
+          const headers = ollamaHeaders();
           const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               model: OLLAMA_MODEL,
               messages: [

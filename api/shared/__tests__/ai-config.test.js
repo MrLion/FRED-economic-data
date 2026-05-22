@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { OLLAMA_BASE_URL, OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from '../ai-config.js';
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_API_KEY, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from '../ai-config.js';
 
 describe('ai-config', () => {
   it('exports ANALYZE_SYSTEM_PROMPT as a non-empty string', () => {
@@ -31,6 +31,14 @@ describe('ai-config', () => {
 
   it('NL_SEARCH_SYSTEM_PROMPT requires JSON response format', () => {
     expect(NL_SEARCH_SYSTEM_PROMPT).toContain('valid JSON only');
+  });
+
+  it('OLLAMA_API_KEY is exported (optional)', () => {
+    // Optional — only check type when set
+    if (OLLAMA_API_KEY) {
+      expect(typeof OLLAMA_API_KEY).toBe('string');
+      expect(OLLAMA_API_KEY.length).toBeGreaterThan(0);
+    }
   });
 
   it('ANALYZE_SYSTEM_PROMPT covers all 5 analysis points', () => {

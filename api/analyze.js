@@ -1,4 +1,10 @@
-import { OLLAMA_BASE_URL, OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT } from './shared/ai-config.js';
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, OLLAMA_API_KEY, ANALYZE_SYSTEM_PROMPT } from './shared/ai-config.js';
+
+function ollamaHeaders() {
+  const h = { 'Content-Type': 'application/json' };
+  if (OLLAMA_API_KEY) h['Authorization'] = `Bearer ${OLLAMA_API_KEY}`;
+  return h;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -27,7 +33,7 @@ ${dataSummary}`;
   try {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: ollamaHeaders(),
       body: JSON.stringify({
         model: OLLAMA_MODEL,
         messages: [
