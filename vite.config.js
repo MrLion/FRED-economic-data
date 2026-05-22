@@ -16,7 +16,16 @@ function analyzeApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = JSON.parse(body);
+        let parsed;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Invalid JSON request body' }));
+          return;
+        }
+        const { seriesId, seriesTitle, units, frequency, seasonalAdjustment, dataSummary } = parsed;
 
         if (!OLLAMA_BASE_URL || !OLLAMA_MODEL) {
           res.statusCode = 500;
@@ -27,7 +36,7 @@ function analyzeApiPlugin() {
         if (!dataSummary) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Missing dataSummary' }));
+          res.end(JSON.stringify({ error: 'Data summary is required' }));
           return;
         }
 
@@ -47,16 +56,17 @@ function analyzeApiPlugin() {
             }),
           });
 
-          const data = await response.json();
-          res.setHeader('Content-Type', 'application/json');
-
           if (!response.ok) {
-            res.statusCode = response.status === 401 ? 401 : 502;
-            res.end(JSON.stringify({ error: data?.error || `API error: ${response.status}` }));
+            const errData = await response.json().catch(() => ({}));
+            res.statusCode = 502;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: String(errData?.error || '') || `API error: ${response.status}` }));
             return;
           }
 
+          const data = await response.json();
           const narrative = data?.message?.content || 'No analysis generated.';
+          res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ narrative }));
         } catch (err) {
           res.statusCode = 500;
@@ -83,7 +93,16 @@ function nlSearchApiPlugin() {
 
         let body = '';
         for await (const chunk of req) body += chunk;
-        const { query } = JSON.parse(body);
+        let parsed;
+        try {
+          parsed = JSON.parse(body);
+        } catch {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Invalid JSON request body' }));
+          return;
+        }
+        const { query } = parsed;
 
         if (!OLLAMA_BASE_URL || !OLLAMA_MODEL) {
           res.statusCode = 500;
@@ -94,7 +113,7 @@ function nlSearchApiPlugin() {
         if (!query) {
           res.statusCode = 400;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Missing query' }));
+          res.end(JSON.stringify({ error: 'Query is required' }));
           return;
         }
 
@@ -112,15 +131,15 @@ function nlSearchApiPlugin() {
             }),
           });
 
-          const data = await response.json();
-          res.setHeader('Content-Type', 'application/json');
-
           if (!response.ok) {
-            res.statusCode = response.status === 401 ? 401 : 502;
-            res.end(JSON.stringify({ error: data?.error || `API error: ${response.status}` }));
+            const errData = await response.json().catch(() => ({}));
+            res.statusCode = 502;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: String(errData?.error || '') || `API error: ${response.status}` }));
             return;
           }
 
+          const data = await response.json();
           const text = data?.message?.content || '';
           try {
             const parsed = JSON.parse(text);

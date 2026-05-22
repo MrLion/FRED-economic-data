@@ -40,8 +40,8 @@ ${dataSummary}`;
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      const msg = errData?.error || `Ollama API error: ${response.status}`;
-      return res.status(response.status === 401 ? 401 : 502).json({ error: msg });
+      const msg = String(errData?.error || '') || `Ollama API error: ${response.status}`;
+      return res.status(502).json({ error: msg });
     }
 
     const data = await response.json();
