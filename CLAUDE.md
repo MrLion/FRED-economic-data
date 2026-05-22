@@ -40,26 +40,26 @@ Both serverless functions and Vite middleware import from this shared file. **Ne
 ### Key Management
 
 - **FRED key:** Server-side only. `FRED_API_KEY` env var, injected by `api/fred-proxy.js`. No client-side key storage.
-- **Anthropic key:** Server-side via `ANTHROPIC_API_KEY` env var. Client sends empty `apiKey` field; serverless functions fall back to env var.
+- **Ollama key:** No key needed. `OLLAMA_BASE_URL` and `OLLAMA_MODEL` env vars configure the Ollama endpoint (server-side only).
 
 ### Data Flow Patterns
 
 - **`useFred` hook** (`src/hooks/useFred.js`): Generic async fetcher returning `{ data, loading, error, refetch }`. Used by all pages.
 - **`useHistory` hook** (`src/hooks/useHistory.js`): Tracks last 20 viewed series in localStorage with try-catch error handling.
-- **AI chart analysis**: Client computes a statistical summary of the data points locally, then sends only the summary (not raw data) to Claude to minimize token usage.
-- **Natural language search**: `isNaturalLanguage()` heuristic in `Search.jsx` detects questions (question marks, question words, contractions, 6+ words). Claude extracts 1-3 FRED search terms, which are queried in parallel and deduplicated.
+- **AI chart analysis**: Client computes a statistical summary of the data points locally, then sends only the summary (not raw data) to Ollama to minimize token usage.
+- **Natural language search**: `isNaturalLanguage()` heuristic in `Search.jsx` detects questions (question marks, question words, contractions, 6+ words). Ollama extracts 1-3 FRED search terms, which are queried in parallel and deduplicated.
 - **Search race condition fix**: `Search.jsx` uses `AbortController` to cancel stale requests when the query changes. `signal` threads through `nlSearch()` → `searchSeries()` → `fredFetch()` → `fetch()`.
 
 ### AI Model
 
-Configured via `AI_MODEL` in `api/shared/ai-config.js`. Reads `ANTHROPIC_MODEL` env var with fallback to `claude-3-haiku-20240307`.
+Configured via `OLLAMA_MODEL` and `OLLAMA_BASE_URL` in `api/shared/ai-config.js`. Reads `OLLAMA_MODEL` and `OLLAMA_BASE_URL` env vars.
 
 ## Deployment
 
 Vercel with **Vite** framework preset. Required env vars in Vercel dashboard:
 - `FRED_API_KEY` — FRED API key (required)
-- `ANTHROPIC_API_KEY` — Anthropic API key (required for AI features)
-- `ANTHROPIC_MODEL` — optional model override
+- `OLLAMA_BASE_URL` — Ollama API endpoint (required for AI features)
+- `OLLAMA_MODEL` — model name to use (required for AI features, e.g., `gemma4:31b-cloud`)
 
 ## File Conventions
 
