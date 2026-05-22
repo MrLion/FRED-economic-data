@@ -115,37 +115,3 @@ export async function getRecessionPeriods() {
   return periods;
 }
 
-// Anthropic API key management — wrapped in try-catch for Safari private browsing / quota exceeded
-export function getAnthropicKey() {
-  try {
-    return localStorage.getItem('anthropic_api_key') || '';
-  } catch {
-    console.warn('Could not read anthropic_api_key from localStorage');
-    return '';
-  }
-}
-
-export function setAnthropicKey(key) {
-  try {
-    localStorage.setItem('anthropic_api_key', key.trim());
-  } catch {
-    console.warn('Could not save anthropic_api_key to localStorage');
-  }
-}
-
-export function hasAnthropicKey() {
-  try {
-    return !!localStorage.getItem('anthropic_api_key');
-  } catch {
-    console.warn('Could not check anthropic_api_key in localStorage');
-    return false;
-  }
-}
-
-export function clearAnthropicKey() {
-  try {
-    localStorage.removeItem('anthropic_api_key');
-  } catch {
-    console.warn('Could not remove anthropic_api_key from localStorage');
-  }
-}

@@ -69,29 +69,4 @@ describe('fred.js', () => {
     });
   });
 
-  describe('Anthropic key localStorage error handling', () => {
-    it('getAnthropicKey returns empty string on localStorage error', async () => {
-      localStorageMock.getItem.mockImplementation(() => { throw new Error('quota exceeded'); });
-      const { getAnthropicKey } = await import('../fred.js');
-      expect(getAnthropicKey()).toBe('');
-    });
-
-    it('setAnthropicKey does not throw on localStorage error', async () => {
-      localStorageMock.setItem.mockImplementation(() => { throw new Error('quota exceeded'); });
-      const { setAnthropicKey } = await import('../fred.js');
-      expect(() => setAnthropicKey('test-key')).not.toThrow();
-    });
-
-    it('hasAnthropicKey returns false on localStorage error', async () => {
-      localStorageMock.getItem.mockImplementation(() => { throw new Error('quota exceeded'); });
-      const { hasAnthropicKey } = await import('../fred.js');
-      expect(hasAnthropicKey()).toBe(false);
-    });
-
-    it('clearAnthropicKey does not throw on localStorage error', async () => {
-      localStorageMock.removeItem.mockImplementation(() => { throw new Error('quota exceeded'); });
-      const { clearAnthropicKey } = await import('../fred.js');
-      expect(() => clearAnthropicKey()).not.toThrow();
-    });
-  });
 });

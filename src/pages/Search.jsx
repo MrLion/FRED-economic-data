@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { searchSeries } from '../api/fred';
-import { getAnthropicKey } from '../api/fred';
 import SeriesCard from '../components/SeriesCard';
 import Loading, { ErrorMessage } from '../components/Loading';
 import { Sparkles, Search as SearchIcon } from 'lucide-react';
@@ -19,7 +18,7 @@ async function nlSearch(query, signal) {
   const res = await fetch('/api/nl-search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ apiKey: getAnthropicKey(), query }),
+    body: JSON.stringify({ query }),
     signal,
   });
   const data = await res.json();
