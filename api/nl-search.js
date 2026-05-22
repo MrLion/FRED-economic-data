@@ -1,4 +1,4 @@
-import { AI_MODEL, NL_SEARCH_SYSTEM_PROMPT } from './shared/ai-config.js';
+import { OLLAMA_MODEL, NL_SEARCH_SYSTEM_PROMPT } from './shared/ai-config.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model: OLLAMA_MODEL,
         max_tokens: 256,
         system: NL_SEARCH_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: query }],

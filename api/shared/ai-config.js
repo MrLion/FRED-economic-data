@@ -1,4 +1,5 @@
-export const AI_MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-haiku-20240307';
+export const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL;
+export const OLLAMA_MODEL = process.env.OLLAMA_MODEL;
 
 export const ANALYZE_SYSTEM_PROMPT = `You are an expert economic data analyst. You explain economic data series from the Federal Reserve Economic Data (FRED) database in clear, accessible language.
 

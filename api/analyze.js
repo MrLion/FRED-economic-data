@@ -1,4 +1,4 @@
-import { AI_MODEL, ANALYZE_SYSTEM_PROMPT } from './shared/ai-config.js';
+import { OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT } from './shared/ai-config.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -34,7 +34,7 @@ ${dataSummary}`;
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model: OLLAMA_MODEL,
         max_tokens: 1024,
         system: ANALYZE_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMessage }],

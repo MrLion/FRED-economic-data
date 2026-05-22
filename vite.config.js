@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
-import { AI_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
+import { OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from './api/shared/ai-config.js'
 
 // Dev-only middleware to handle /api/analyze (mirrors the Vercel serverless function)
 function analyzeApiPlugin() {
@@ -37,7 +37,7 @@ function analyzeApiPlugin() {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: AI_MODEL,
+              model: OLLAMA_MODEL,
               max_tokens: 1024,
               system: ANALYZE_SYSTEM_PROMPT,
               messages: [{ role: 'user', content: userMessage }],
@@ -99,7 +99,7 @@ function nlSearchApiPlugin() {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: AI_MODEL,
+              model: OLLAMA_MODEL,
               max_tokens: 256,
               system: NL_SEARCH_SYSTEM_PROMPT,
               messages: [{ role: 'user', content: query }],
