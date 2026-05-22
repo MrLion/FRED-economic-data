@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { getAnthropicKey } from '../api/fred';
 import { Sparkles, AlertTriangle, X, ChevronUp, ChevronDown } from 'lucide-react';
 
 function computeDataSummary(observations) {
@@ -81,7 +80,6 @@ export default function AiNarrator({ series, observations }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          apiKey: getAnthropicKey(),
           seriesId: series.id,
           seriesTitle: series.title,
           units: series.units || 'N/A',
@@ -94,11 +92,7 @@ export default function AiNarrator({ series, observations }) {
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401) {
-          setError('Invalid Anthropic API key. Please check your key in Settings.');
-        } else {
-          setError(data.error || 'Failed to generate analysis.');
-        }
+        setError(data.error || 'Failed to generate analysis.');
         return;
       }
 

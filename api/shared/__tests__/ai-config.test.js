@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AI_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from '../ai-config.js';
+import { OLLAMA_BASE_URL, OLLAMA_MODEL, ANALYZE_SYSTEM_PROMPT, NL_SEARCH_SYSTEM_PROMPT } from '../ai-config.js';
 
 describe('ai-config', () => {
   it('exports ANALYZE_SYSTEM_PROMPT as a non-empty string', () => {
@@ -19,9 +19,14 @@ describe('ai-config', () => {
     expect(ANALYZE_SYSTEM_PROMPT).toContain('imagine explaining to someone with basic economic knowledge');
   });
 
-  it('AI_MODEL has a default value', () => {
-    expect(typeof AI_MODEL).toBe('string');
-    expect(AI_MODEL.length).toBeGreaterThan(0);
+  it('OLLAMA_MODEL is exported as a non-empty string', () => {
+    expect(typeof OLLAMA_MODEL).toBe('string');
+    expect(OLLAMA_MODEL.length).toBeGreaterThan(0);
+  });
+
+  it('OLLAMA_BASE_URL is exported as a non-empty string', () => {
+    expect(typeof OLLAMA_BASE_URL).toBe('string');
+    expect(OLLAMA_BASE_URL.length).toBeGreaterThan(0);
   });
 
   it('NL_SEARCH_SYSTEM_PROMPT requires JSON response format', () => {
