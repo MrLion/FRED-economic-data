@@ -92,11 +92,7 @@ export default function AiNarrator({ series, observations }) {
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401) {
-          setError('AI service error. Please try again later.');
-        } else {
-          setError(data.error || 'Failed to generate analysis.');
-        }
+        setError(data.error || 'Failed to generate analysis.');
         return;
       }
 

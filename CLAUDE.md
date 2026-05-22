@@ -25,13 +25,14 @@ All FRED API calls go through `/api/fred-proxy`, a serverless function that inje
 
 AI endpoints (`/api/analyze`, `/api/nl-search`) follow the same dual-environment pattern:
 
-- **Dev:** Custom Vite middleware plugins in `vite.config.js` intercept POST requests and proxy to Anthropic
+- **Dev:** Custom Vite middleware plugins in `vite.config.js` intercept POST requests and proxy to Ollama
 - **Production:** Vercel serverless functions in `api/analyze.js` and `api/nl-search.js`
 
 ### Shared AI Config
 
 All AI configuration lives in `api/shared/ai-config.js` — single source of truth for:
-- `AI_MODEL` — reads `ANTHROPIC_MODEL` env var with fallback to `claude-3-haiku-20240307`
+- `OLLAMA_BASE_URL` — Ollama API endpoint
+- `OLLAMA_MODEL` — model to use (e.g., `gemma4:31b-cloud`)
 - `ANALYZE_SYSTEM_PROMPT` — chart analysis system prompt
 - `NL_SEARCH_SYSTEM_PROMPT` — natural language search system prompt
 

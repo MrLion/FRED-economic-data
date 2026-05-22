@@ -60,7 +60,7 @@ function analyzeApiPlugin() {
             const errData = await response.json().catch(() => ({}));
             res.statusCode = 502;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: String(errData?.error || '') || `API error: ${response.status}` }));
+            res.end(JSON.stringify({ error: String(errData?.error || '') || `Ollama API error: ${response.status}` }));
             return;
           }
 
@@ -71,7 +71,7 @@ function analyzeApiPlugin() {
         } catch (err) {
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: `Failed: ${err.message}` }));
+          res.end(JSON.stringify({ error: `Failed to analyze: ${err.message}` }));
         }
       });
     },
@@ -135,7 +135,7 @@ function nlSearchApiPlugin() {
             const errData = await response.json().catch(() => ({}));
             res.statusCode = 502;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: String(errData?.error || '') || `API error: ${response.status}` }));
+            res.end(JSON.stringify({ error: String(errData?.error || '') || `Ollama API error: ${response.status}` }));
             return;
           }
 

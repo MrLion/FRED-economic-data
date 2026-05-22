@@ -14,11 +14,11 @@ A web application for browsing and visualizing economic data from the Federal Re
 - **Time Range Selection** -- Toggle between 1-year, 5-year, 10-year, and full history views
 - **Latest Value Display** -- Prominent display of the most recent observation
 - **Metadata Panel** -- Units, frequency, seasonal adjustment, date range, and source notes
-- **AI Chart Analysis** -- Click "Explain this chart" to get an AI-generated narrative explaining trends, patterns, and economic significance (powered by Claude)
+- **AI Chart Analysis** -- Click "Explain this chart" to get an AI-generated narrative explaining trends, patterns, and economic significance (powered by Ollama)
 
 ### Search
 - **Full-Text Search** -- Search across all FRED series by keyword (GDP, unemployment, inflation, etc.)
-- **Natural Language Search** -- Ask questions like "How has inflation changed since COVID?" and AI extracts the optimal FRED search terms (powered by Claude)
+- **Natural Language Search** -- Ask questions like "How has inflation changed since COVID?" and AI extracts the optimal FRED search terms (powered by Ollama)
 - **Real-Time Suggestions** -- Live dropdown with top 6 matching series as you type, with keyboard navigation
 - **Clear Button** -- One-tap button to reset the search input
 - **Paginated Results** -- Load more results incrementally with series count display
@@ -38,7 +38,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 | Build Tool | Vite |
 | Routing | React Router v7 |
 | Charts | Recharts |
-| AI Analysis | Claude API via Vercel serverless functions |
+| AI Analysis | Ollama API via Vercel serverless functions |
 | API | FRED REST API via server-side proxy |
 | Storage | localStorage (history only) |
 | Styling | Plain CSS with CSS custom properties |
@@ -50,7 +50,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 
 1. **Node.js** (v18 or later)
 2. **FRED API Key** -- Register for a free key at [fred.stlouisfed.org/docs/api/api_key.html](https://fred.stlouisfed.org/docs/api/api_key.html)
-3. **Anthropic API Key** (optional) -- For AI chart analysis, get a key at [console.anthropic.com](https://console.anthropic.com/)
+3. **Ollama** -- For AI chart analysis, ensure an Ollama instance is accessible (configure `OLLAMA_BASE_URL` and `OLLAMA_MODEL` in `.env`)
 
 ### Installation
 
@@ -62,20 +62,20 @@ cp .env.example .env   # Then fill in your API keys
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser. The app loads directly -- no API key entry needed. AI features require `ANTHROPIC_API_KEY` in your `.env` file.
+Open `http://localhost:5173` in your browser. The app loads directly -- no API key entry needed. AI features require `OLLAMA_BASE_URL` and `OLLAMA_MODEL` in your `.env` file.
 
 ### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `FRED_API_KEY` | Yes | FRED API key for data access |
-| `ANTHROPIC_API_KEY` | For AI | Anthropic API key for chart analysis and NL search |
-| `ANTHROPIC_MODEL` | No | Override AI model (default: `claude-3-haiku-20240307`) |
+| `OLLAMA_BASE_URL` | For AI | Ollama API endpoint URL |
+| `OLLAMA_MODEL` | For AI | Model name to use (e.g., `gemma4:31b-cloud`) |
 
 ### Deploying to Vercel
 
 1. Import the project and select **Vite** as the framework preset
-2. Set `FRED_API_KEY` and `ANTHROPIC_API_KEY` in Vercel environment variables
+2. Set `FRED_API_KEY`, `OLLAMA_BASE_URL`, and `OLLAMA_MODEL` in Vercel environment variables
 3. Deploy
 
 ## Project Structure
@@ -91,7 +91,7 @@ src/
   api/
     fred.js                # FRED API client -- all endpoint wrappers
   components/
-    AiNarrator.jsx         # AI-powered chart analysis with Claude
+    AiNarrator.jsx         # AI-powered chart analysis with Ollama
     BottomNav.jsx          # Mobile bottom tab bar / desktop sidebar
     Chart.jsx              # Recharts line chart with tooltips
     Header.jsx             # Top bar with search and settings
