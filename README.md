@@ -18,7 +18,7 @@ A web application for browsing and visualizing economic data from the Federal Re
 
 ### Search
 - **Full-Text Search** -- Search across all FRED series by keyword (GDP, unemployment, inflation, etc.)
-- **Natural Language Search** -- Ask questions like "How has inflation changed since COVID?" and AI extracts the optimal FRED search terms (powered by Ollama)
+- **Natural Language Search** -- Ask questions like "Housing data in MA" and AI extracts the optimal FRED search terms (powered by Ollama)
 - **Real-Time Suggestions** -- Live dropdown with top 6 matching series as you type, with keyboard navigation
 - **Clear Button** -- One-tap button to reset the search input
 - **Paginated Results** -- Load more results incrementally with series count display
